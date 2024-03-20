@@ -33,12 +33,19 @@ when "commit"
   workspace = Workspace.new(root_path)
   database = Database.new(db_path)
 
-  workspace.list_files.each do |path|
+  entries = workspace.list_files.map do |path|
     data = workspace.read_file(path)
     blob = Blob.new(data)
 
     database.store(blob)
+
+    Entry.new(path, blob.oid)
   end
+
+  tree = Tree.new(entries)
+  database.store(tree)
+
+  puts "tree: #{ tree.oid }"
 
 else
   $stderr.puts "jit: '#{ command }' is not a jit command."
