@@ -4,6 +4,8 @@ require "zlib"
 require_relative "./blob"
 
 class Database
+  TEMP_CHARS = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
+
   def initialize(pathname)
     @pathname = pathname
   end
@@ -39,7 +41,7 @@ class Database
   end
 
   def generate_temp_name
-    "tmp"
+    "tmp_obj_#{ (1..6).map { TEMP_CHARS.sample }.join("") }"
   end
 
 end
