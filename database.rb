@@ -3,7 +3,9 @@
 require "digest/sha1"
 require "zlib"
 
-require_relative "./blob"
+require_relative "blob"
+require_relative "commit"
+require_relative "tree"
 
 class Database
   TEMP_CHARS = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
@@ -43,6 +45,6 @@ class Database
   end
 
   def generate_temp_name
-    "tmp_obj_#{(1..6).map { TEMP_CHARS.sample }.join('')}"
+    "tmp_obj_#{(1..6).map { TEMP_CHARS.sample }.join}"
   end
 end

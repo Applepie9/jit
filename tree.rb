@@ -19,6 +19,6 @@ class Tree
       ["#{MODE} #{entry.name}", entry.oid].pack(ENTRY_FORMAT)
     end
 
-    entries.join("")
+    entries.join
   end
 end

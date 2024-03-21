@@ -1,5 +1,5 @@
 AllCops:
-  StyleGuideBaseURL: https://rubystyle.guide
+  NewCops: enable
 
 Style/StringLiterals:
   Enabled: false
