@@ -3,10 +3,10 @@
 require "fileutils"
 require "pathname"
 
-require_relative "author"
-require_relative "database"
-require_relative "entry"
-require_relative "workspace"
+require_relative "../lib/author"
+require_relative "../lib/database"
+require_relative "../lib/entry"
+require_relative "../lib/workspace"
 
 command = ARGV.shift
 
