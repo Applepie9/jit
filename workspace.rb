@@ -1,5 +1,7 @@
+# frozen_string_literal: true
+
 class Workspace
-  IGNORE = [".", "..", ".git"]
+  IGNORE = [".", "..", ".git"].freeze
 
   def initialize(pathname)
     @pathname = pathname

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Tree
   ENTRY_FORMAT = "Z*H40"
   MODE = "100644"
@@ -7,14 +9,14 @@ class Tree
   def initialize(entries)
     @entries = entries
   end
-  
+
   def type
     "tree"
   end
-  
+
   def to_s
     entries = @entries.sort_by(&:name).map do |entry|
-      ["#{ MODE } #{ entry.name }", entry.oid].pack(ENTRY_FORMAT)
+      ["#{MODE} #{entry.name}", entry.oid].pack(ENTRY_FORMAT)
     end
 
     entries.join("")

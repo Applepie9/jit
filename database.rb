@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "digest/sha1"
 require "zlib"
 
@@ -12,16 +14,16 @@ class Database
 
   def store(object)
     string = object.to_s.force_encoding(Encoding::ASCII_8BIT)
-    content = "#{ object.type } #{ string.bytesize }\0#{ string }"
-    
+    content = "#{object.type} #{string.bytesize}\0#{string}"
+
     object.oid = Digest::SHA1.hexdigest(content)
     write_object(object.oid, content)
   end
-  
+
   private
 
   def write_object(oid, content)
-    object_path = @pathname.join(oid[0..1], oid[2..-1])
+    object_path = @pathname.join(oid[0..1], oid[2..])
     dirname = object_path.dirname
     temp_path = dirname.join(generate_temp_name)
 
@@ -41,7 +43,6 @@ class Database
   end
 
   def generate_temp_name
-    "tmp_obj_#{ (1..6).map { TEMP_CHARS.sample }.join("") }"
+    "tmp_obj_#{(1..6).map { TEMP_CHARS.sample }.join('')}"
   end
-
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Commit
   attr_accessor :oid
 
@@ -13,13 +15,13 @@ class Commit
 
   def to_s
     lines = [
-      "tree #{ @tree }",
-      "author #{ @author }",
-      "committer #{ @author }",
+      "tree #{@tree}",
+      "author #{@author}",
+      "committer #{@author}",
       "",
       @message
     ]
-    
+
     lines.join("\n")
   end
 end
