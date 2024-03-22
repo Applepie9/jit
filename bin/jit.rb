@@ -35,13 +35,13 @@ when "commit"
   workspace = Workspace.new(root_path)
   database = Database.new(db_path)
 
-  entries = workspace.list_files.map do |path|
-    data = workspace.read_file(path)
+  entries = workspace.list_files.map do |file_path|
+    data = workspace.read_file(file_path)
     blob = Blob.new(data)
 
     database.store(blob)
 
-    Entry.new(path, blob.oid)
+    Entry.new(file_path, blob.oid)
   end
 
   tree = Tree.new(entries)
@@ -56,7 +56,7 @@ when "commit"
   database.store(commit)
 
   File.open(git_path.join("HEAD"), File::WRONLY | File::CREAT) do |file|
-    file.puts(com(mit.oid))
+    file.puts(commit.oid)
   end
 
   puts "[(root-commit) #{commit.oid}] #{message.lines.first}"
