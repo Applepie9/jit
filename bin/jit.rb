@@ -4,7 +4,6 @@
 require "fileutils"
 require "pathname"
 
-require_relative "../lib/author"
 require_relative "../lib/database"
 require_relative "../lib/entry"
 require_relative "../lib/refs"
@@ -40,7 +39,7 @@ when "commit"
 
   entries = workspace.list_files.map do |file_path|
     data = workspace.read_file(file_path)
-    blob = Blob.new(data)
+    blob = Database::Blob.new(data)
 
     database.store(blob)
 
@@ -48,8 +47,8 @@ when "commit"
     Entry.new(file_path, blob.oid, stat)
   end
 
-  tree = Tree.new(entries)
-  database.store(tree)
+  root = Database::Tree.build(entries)
+  root.traverse { |tree| database.store(tree) }
 
   parent = refs.read_head
   name = ENV.fetch("GIT_AUTHOR_NAME")
@@ -57,7 +56,7 @@ when "commit"
   author = Author.new(name, email, Time.now)
   message = $stdin.read
 
-  commit = Commit.new(parent, tree.oid, author, message)
+  commit = Database::Commit.new(parent, root.oid, author, message)
   database.store(commit)
   refs.update_head(commit.oid)
 
