@@ -19,7 +19,7 @@ class Index
     begin_write
     header = ["DIRC", 2, @entries.size].pack(HEADER_FORMAT)
     write(header)
-    @entries.each { |_key, entry| write(entry.to_s) }
+    @entries.each_value { |entry| write(entry.to_s) }
     finish_write
 
     true
