@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require "digest/sha1"
-require "set"
+require "sorted_set"
 
 require_relative "index/entry"
 require_relative "lockfile"
