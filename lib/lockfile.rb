@@ -2,8 +2,8 @@
 
 class Lockfile
   MissingParent = Class.new(StandardError)
-  NoPermission = Class.new(StandardError)
-  StaleLock = Class.new(StandardError)
+  NoPermission  = Class.new(StandardError)
+  StaleLock     = Class.new(StandardError)
 
   def initialize(path)
     @file_path = path
@@ -36,6 +36,14 @@ class Lockfile
 
     @lock.close
     File.rename(@lock_path, @file_path)
+    @lock = nil
+  end
+
+  def rollback
+    raise_on_stale_lock
+
+    @lock.close
+    File.unlink(@lock_path)
     @lock = nil
   end
 
