@@ -22,11 +22,32 @@ describe Index do
 
   it "replaces a file with a directory" do
     index.add("alice.txt", oid, stat)
-    index.add("bunny.txt", oid, stat)
+    index.add("bottle.txt", oid, stat)
 
     index.add("alice.txt/nested.txt", oid, stat)
 
-    assert_equal ["alice.txt/nested.txt", "bunny.txt"],
+    assert_equal ["alice.txt/nested.txt", "bottle.txt"],
+                 index.each_entry.map(&:path)
+  end
+
+  it "replaces a directory with a file" do
+    index.add("alice.txt", oid, stat)
+    index.add("nested/bottle.txt", oid, stat)
+
+    index.add("nested", oid, stat)
+
+    assert_equal ["alice.txt", "nested"],
+                 index.each_entry.map(&:path)
+  end
+
+  it "recursively replaces a directory with a file" do
+    index.add("alice.txt", oid, stat)
+    index.add("nested/bottle.txt", oid, stat)
+    index.add("nested/inner/cheshire.txt", oid, stat)
+
+    index.add("nested", oid, stat)
+
+    assert_equal ["alice.txt", "nested"],
                  index.each_entry.map(&:path)
   end
 end
