@@ -19,4 +19,14 @@ describe Index do
 
     assert_equal ["alice.txt"], index.each_entry.map(&:path)
   end
+
+  it "replaces a file with a directory" do
+    index.add("alice.txt", oid, stat)
+    index.add("bunny.txt", oid, stat)
+
+    index.add("alice.txt/nested.txt", oid, stat)
+
+    assert_equal ["alice.txt/nested.txt", "bunny.txt"],
+                 index.each_entry.map(&:path)
+  end
 end
