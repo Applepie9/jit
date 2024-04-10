@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Workspace
+  MissingFile = Class.new(StandardError)
+
   IGNORE = [".", "..", ".git"].freeze
 
   def initialize(pathname)
@@ -8,11 +10,15 @@ class Workspace
   end
 
   def list_files(path = @pathname)
+    relative = path.relative_path_from(@pathname)
+
     if File.directory?(path)
       filenames = Dir.entries(path) - IGNORE
       filenames.flat_map { |name| list_files(path.join(name)) }
+    elsif File.exist?(path)
+      [relative]
     else
-      [path.relative_path_from(@pathname)]
+      raise MissingFile, "pathspec '#{relative}' did not match any files"
     end
   end
 
