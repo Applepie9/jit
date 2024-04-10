@@ -3,18 +3,20 @@
 require "fileutils"
 require "pathname"
 
-module Command
-  class Init
-    def run
-      path = ARGV.fetch(0, Dir.getwd)
+require_relative "base"
 
-      root_path = Pathname.new(File.expand_path(path))
+module Command
+  class Init < Base
+    def run
+      path = @args.fetch(0, @dir)
+
+      root_path = expanded_pathname(path)
       git_path  = root_path.join(".git")
 
       %w[objects refs].each do |dir|
         FileUtils.mkdir_p(git_path.join(dir))
       rescue Errno::EACCES => e
-        warn "fatal: #{e.message}"
+        @stderr.puts "fatal: #{e.message}"
         exit 1
       end
 

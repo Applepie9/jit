@@ -1,20 +1,22 @@
 # frozen_string_literal: true
 
 require "pathname"
+
+require_relative "base"
 require_relative "../repository"
 
 module Command
-  class Add
+  class Add < Base
     def run
-      root_path = Pathname.new(Dir.getwd)
+      root_path = Pathname.new(@dir)
       repo = Repository.new(root_path.join(".git"))
 
       begin
         repo.index.load_for_update
       rescue Lockfile::LockDenied => e
-        warn <<~ERROR
+        @stderr.puts <<~ERROR
           fatal: #{e.message}
-          
+
           Another jit process seems to be running in this repository.
           Please make sure all processes are terminated then try again.
           If it still fails, a jit process may have crashed in this
@@ -24,12 +26,12 @@ module Command
       end
 
       begin
-        paths = ARGV.flat_map do |path|
-          path = Pathname.new(File.expand_path(path))
+        paths = @args.flat_map do |path|
+          path = expanded_pathname(path)
           repo.workspace.list_files(path)
         end
       rescue Workspace::MissingFile => e
-        warn "fatal: #{e.message}"
+        @stderr.puts "fatal: #{e.message}"
         repo.index.release_lock
         exit 128
       end
@@ -44,8 +46,8 @@ module Command
           repo.index.add(path, blob.oid, stat)
         end
       rescue Workspace::NoPermission => e
-        warn "error: #{e.message}"
-        warn "fatal: adding files failed"
+        @stderr.puts "error: #{e.message}"
+        @stderr.puts "fatal: adding files failed"
         repo.index.release_lock
         exit 128
       end

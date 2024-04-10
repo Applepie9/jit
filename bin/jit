@@ -4,8 +4,8 @@
 require_relative "../lib/command"
 
 begin
-  name = ARGV.shift
-  Command.execute(name)
+  cmd = Command.execute(Dir.getwd, ENV, ARGV, $stdin, $stdout, $stderr)
+  exit cmd.status
 rescue Command::Unknown => e
   warn "jit: #{e.message}"
   exit 1
