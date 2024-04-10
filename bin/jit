@@ -39,6 +39,20 @@ when "add"
   index.load_for_update
 
   begin
+    index.load_for_update
+  rescue Lockfile::LockDenied => e
+    warn <<~ERROR
+      fatal: #{e.message}
+
+      Another jit process seems to be running in this repository.
+      Please make sure all processes are terminated then try again.
+      If it still fails, a jit process may have crashed in this
+      repository earlier: remove the file manually to continue.
+    ERROR
+    exit 128
+  end
+
+  begin
     paths = ARGV.flat_map do |file_path|
       path = Pathname.new(File.expand_path(file_path))
       workspace.list_files(path)

@@ -3,8 +3,6 @@
 require_relative "lockfile"
 
 class Refs
-  LockDenied = Class.new(StandardError)
-
   def initialize(pathname)
     @pathname = pathname
   end
@@ -17,8 +15,6 @@ class Refs
 
   def update_head(oid)
     lockfile = Lockfile.new(head_path)
-
-    raise LockDenied, "Could not acquire lock on file: #{head_path}" unless lockfile.hold_for_update
 
     lockfile.write(oid)
     lockfile.write("\n")
