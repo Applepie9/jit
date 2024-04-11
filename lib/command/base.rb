@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "pathname"
+require_relative "../repository"
 
 module Command
   class Base
@@ -20,6 +21,10 @@ module Command
     end
 
     private
+
+    def repo
+      @repo ||= Repository.new(Pathname.new(@dir).join(".git"))
+    end
 
     def expanded_pathname(path)
       Pathname.new(File.expand_path(path, @dir))
