@@ -3,6 +3,7 @@
 require_relative "command/add"
 require_relative "command/commit"
 require_relative "command/init"
+require_relative "command/status"
 
 module Command
   Unknown = Class.new(StandardError)
@@ -10,7 +11,8 @@ module Command
   COMMANDS = {
     "init" => Init,
     "add" => Add,
-    "commit" => Commit
+    "commit" => Commit,
+    "status" => Status
   }.freeze
 
   def self.execute(dir, env, argv, stdin, stdout, stderr)
