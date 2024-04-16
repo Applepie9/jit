@@ -16,6 +16,7 @@ class Refs
   def update_head(oid)
     lockfile = Lockfile.new(head_path)
 
+    lockfile.hold_for_update
     lockfile.write(oid)
     lockfile.write("\n")
     lockfile.commit
