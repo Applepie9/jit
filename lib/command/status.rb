@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "sorted_set"
 require_relative "base"
 
 module Command
@@ -7,15 +8,26 @@ module Command
     def run
       repo.index.load
 
-      untracked = repo.workspace.list_files.reject do |path|
-        repo.index.tracked?(path)
-      end
+      @untracked = SortedSet.new
 
-      untracked.sort.each do |path|
-        puts "?? #{path}"
-      end
+      scan_workspace
+
+      @untracked.each { |path| puts "?? #{path}" }
 
       exit 0
+    end
+
+    private
+
+    def scan_workspace(prefix = nil)
+      repo.workspace.list_dir(prefix).each do |path, stat|
+        if repo.index.tracked?(path)
+          scan_workspace(path) if stat.directory?
+        else
+          path += File::SEPARATOR if stat.directory?
+          @untracked.add(path)
+        end
+      end
     end
   end
 end
