@@ -48,6 +48,10 @@ class Index
       Pathname.new(path).basename
     end
 
+    def stat_match?(stat)
+      size.zero? or size == stat.size
+    end
+
     def to_s
       string = to_a.pack(ENTRY_FORMAT)
       string.concat("\0") until (string.bytesize % ENTRY_BLOCK).zero?
