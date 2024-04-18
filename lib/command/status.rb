@@ -6,22 +6,49 @@ require_relative "base"
 module Command
   class Status < Base
     def run
-      repo.index.load
-
       @stats     = {}
       @changed   = SortedSet.new
+      @changes   = Hash.new { |hash, key| hash[key] = Set.new }
       @untracked = SortedSet.new
+
+      repo.index.load_for_update
 
       scan_workspace
       detect_workspace_changes
 
-      @changed.each { |path| puts " M #{path}" }
-      @untracked.each { |path| puts "?? #{path}" }
+      repo.index.write_updates
 
+      print_results
       exit 0
     end
 
     private
+
+    def print_results
+      @changed.each do |path|
+        status = status_for(path)
+        puts "#{status} #{path}"
+      end
+
+      @untracked.each do |path|
+        puts "?? #{path}"
+      end
+    end
+
+    def status_for(path)
+      changes = @changes[path]
+
+      status = "  "
+      status = " D" if changes.include?(:workspace_deleted)
+      status = " M" if changes.include?(:workspace_modified)
+
+      status
+    end
+
+    def record_change(path, type)
+      @changed.add(path)
+      @changes[path].add(type)
+    end
 
     def scan_workspace(prefix = nil)
       repo.workspace.list_dir(prefix).each do |path, stat|
@@ -56,13 +83,20 @@ module Command
 
     def check_index_entry(entry)
       stat = @stats[entry.path]
-      return @changed.add(entry.path) unless entry.stat_match?(stat)
+
+      return record_change(entry.path, :workspace_deleted) unless stat
+      return record_change(entry.path, :workspace_modified) unless entry.stat_match?(stat)
+      return if entry.times_match?(stat)
 
       data = repo.workspace.read_file(entry.path)
       blob = Database::Blob.new(data)
       oid  = repo.database.hash_object(blob)
 
-      @changed.add(entry.path) unless entry.oid == oid
+      if entry.oid == oid
+        repo.index.update_entry_stat(entry, stat)
+      else
+        record_change(entry.path, :workspace_modified)
+      end
     end
   end
 end

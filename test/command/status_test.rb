@@ -110,5 +110,28 @@ describe Command::Status do
         \ M a/2.txt
       STATUS
     end
+
+    it "prints nothing if a file is touched" do
+      touch "1.txt"
+
+      assert_status ""
+    end
+
+    it "reports deleted files" do
+      delete "a/2.txt"
+
+      assert_status <<~STATUS
+        \ D a/2.txt
+      STATUS
+    end
+
+    it "reports files in deleted directories" do
+      delete "a"
+
+      assert_status <<~STATUS
+        \ D a/2.txt
+        \ D a/b/3.txt
+      STATUS
+    end
   end
 end

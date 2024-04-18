@@ -28,6 +28,10 @@ module CommandHelper
     File.open(path, flags) { |file| file.write(contents) }
   end
 
+  def touch(name)
+    FileUtils.touch(repo_path.join(name))
+  end
+
   def make_executable(name)
     File.chmod(0755, repo_path.join(name))
   end
@@ -38,6 +42,10 @@ module CommandHelper
 
   def mkdir(name)
     FileUtils.mkdir_p(repo_path.join(name))
+  end
+
+  def delete(name)
+    FileUtils.rm_rf(repo_path.join(name))
   end
 
   def set_env(key, value)
