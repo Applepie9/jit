@@ -7,6 +7,7 @@ require "zlib"
 require_relative "database/author"
 require_relative "database/blob"
 require_relative "database/commit"
+require_relative "database/entry"
 require_relative "database/tree"
 
 class Database
