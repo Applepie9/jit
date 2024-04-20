@@ -14,7 +14,8 @@ module Command
       repo.index.load_for_update
 
       scan_workspace
-      detect_workspace_changes
+      load_head_tree
+      check_index_entries
 
       repo.index.write_updates
 
@@ -38,11 +39,14 @@ module Command
     def status_for(path)
       changes = @changes[path]
 
-      status = "  "
-      status = " D" if changes.include?(:workspace_deleted)
-      status = " M" if changes.include?(:workspace_modified)
+      left = " "
+      left = "A" if changes.include?(:index_added)
 
-      status
+      right = " "
+      right = "D" if changes.include?(:workspace_deleted)
+      right = "M" if changes.include?(:workspace_modified)
+
+      left + right
     end
 
     def record_change(path, type)
@@ -77,11 +81,37 @@ module Command
       end
     end
 
-    def detect_workspace_changes
-      repo.index.each_entry { |entry| check_index_entry(entry) }
+    def load_head_tree
+      @head_tree = {}
+
+      head_oid = repo.refs.read_head
+      return unless head_oid
+
+      commit = repo.database.load(head_oid)
+      read_tree(commit.tree)
     end
 
-    def check_index_entry(entry)
+    def read_tree(tree_oid, pathname = Pathname.new(""))
+      tree = repo.database.load(tree_oid)
+
+      tree.entries.each do |name, entry|
+        path = pathname.join(name)
+        if entry.tree?
+          read_tree(entry.oid, path)
+        else
+          @head_tree[path.to_s] = entry
+        end
+      end
+    end
+
+    def check_index_entries
+      repo.index.each_entry do |entry|
+        check_index_against_workspace(entry)
+        check_index_against_head_tree(entry)
+      end
+    end
+
+    def check_index_against_workspace(entry)
       stat = @stats[entry.path]
 
       return record_change(entry.path, :workspace_deleted) unless stat
@@ -97,6 +127,14 @@ module Command
       else
         record_change(entry.path, :workspace_modified)
       end
+    end
+
+    def check_index_against_head_tree(entry)
+      item = @head_tree[entry.path]
+
+      return if item
+
+      record_change(entry.path, :index_added)
     end
   end
 end
