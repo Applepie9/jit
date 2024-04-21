@@ -78,8 +78,12 @@ class Index
     end
   end
 
+  def tracked_file?(path)
+    @entries.key?(path.to_s)
+  end
+
   def tracked?(path)
-    @entries.key?(path.to_s) or @parents.key?(path.to_s)
+    tracked_file?(path) or @parents.key?(path.to_s)
   end
 
   private

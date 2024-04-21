@@ -134,4 +134,72 @@ describe Command::Status do
       STATUS
     end
   end
+
+  describe "head/index changes" do
+    before do
+      write_file "1.txt", "one"
+      write_file "a/2.txt", "two"
+      write_file "a/b/3.txt", "three"
+
+      jit_cmd "add", "."
+      commit "first commit"
+    end
+
+    it "reports a file added to a tracked directory" do
+      write_file "a/4.txt", "four"
+      jit_cmd "add", "."
+
+      assert_status <<~STATUS
+        A  a/4.txt
+      STATUS
+    end
+
+    it "reports a file added to an utracked directory" do
+      write_file "d/e/5.txt", "five"
+      jit_cmd "add", "."
+
+      assert_status <<~STATUS
+        A  d/e/5.txt
+      STATUS
+    end
+
+    it "reports modified modes" do
+      make_executable "1.txt"
+      jit_cmd "add", "."
+
+      assert_status <<~STATUS
+        M  1.txt
+      STATUS
+    end
+
+    it "reports modified contents" do
+      write_file "a/b/3.txt", "changed"
+      jit_cmd "add", "."
+
+      assert_status <<~STATUS
+        M  a/b/3.txt
+      STATUS
+    end
+
+    it "reports deleted files" do
+      delete "1.txt"
+      delete ".git/index"
+      jit_cmd "add", "."
+
+      assert_status <<~STATUS
+        D  1.txt
+      STATUS
+    end
+
+    it "reports all deleted files inside directories" do
+      delete "a"
+      delete ".git/index"
+      jit_cmd "add", "."
+
+      assert_status <<~STATUS
+        D  a/2.txt
+        D  a/b/3.txt
+      STATUS
+    end
+  end
 end
