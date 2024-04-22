@@ -5,11 +5,18 @@ require_relative "base"
 
 module Command
   class Status < Base
+    SHORT_STATUS = {
+      added: "A",
+      deleted: "D",
+      modified: "M"
+    }.freeze
+
     def run
-      @stats     = {}
-      @changed   = SortedSet.new
-      @changes   = Hash.new { |hash, key| hash[key] = Set.new }
-      @untracked = SortedSet.new
+      @stats             = {}
+      @changed           = SortedSet.new
+      @index_changes     = {}
+      @workspace_changes = {}
+      @untracked_files   = SortedSet.new
 
       repo.index.load_for_update
 
@@ -32,29 +39,21 @@ module Command
         puts "#{status} #{path}"
       end
 
-      @untracked.each do |path|
+      @untracked_files.each do |path|
         puts "?? #{path}"
       end
     end
 
     def status_for(path)
-      changes = @changes[path]
-
-      left = " "
-      left = "A" if changes.include?(:index_added)
-      left = "M" if changes.include?(:index_modified)
-      left = "D" if changes.include?(:index_deleted)
-
-      right = " "
-      right = "D" if changes.include?(:workspace_deleted)
-      right = "M" if changes.include?(:workspace_modified)
+      left  = SHORT_STATUS.fetch(@index_changes[path], " ")
+      right = SHORT_STATUS.fetch(@workspace_changes[path], " ")
 
       left + right
     end
 
-    def record_change(path, type)
+    def record_change(path, set, type)
       @changed.add(path)
-      @changes[path].add(type)
+      set[path] = type
     end
 
     def scan_workspace(prefix = nil)
@@ -64,7 +63,7 @@ module Command
           scan_workspace(path) if stat.directory?
         elsif trackable_file?(path, stat)
           path += File::SEPARATOR if stat.directory?
-          @untracked.add(path)
+          @untracked_files.add(path)
         end
       end
     end
@@ -117,8 +116,8 @@ module Command
     def check_index_against_workspace(entry)
       stat = @stats[entry.path]
 
-      return record_change(entry.path, :workspace_deleted) unless stat
-      return record_change(entry.path, :workspace_modified) unless entry.stat_match?(stat)
+      return record_change(entry.path, @workspace_changes, :deleted) unless stat
+      return record_change(entry.path, @workspace_changes, :modified) unless entry.stat_match?(stat)
       return if entry.times_match?(stat)
 
       data = repo.workspace.read_file(entry.path)
@@ -128,7 +127,7 @@ module Command
       if entry.oid == oid
         repo.index.update_entry_stat(entry, stat)
       else
-        record_change(entry.path, :workspace_modified)
+        record_change(entry.path, @workspace_changes, :modified)
       end
     end
 
@@ -136,15 +135,15 @@ module Command
       item = @head_tree[entry.path]
 
       if item
-        record_change(entry.path, :index_modified) unless (entry.mode == item.mode) && (entry.oid == item.oid)
+        record_change(entry.path, @index_changes, :modified) unless (entry.mode == item.mode) && (entry.oid == item.oid)
       else
-        record_change(entry.path, :index_added)
+        record_change(entry.path, @index_changes, :added)
       end
     end
 
     def collect_deleted_head_files
       @head_tree.each_key do |path|
-        record_change(path, :index_deleted) unless repo.index.tracked_file?(path)
+        record_change(path, @index_changes, :deleted) unless repo.index.tracked_file?(path)
       end
     end
   end
