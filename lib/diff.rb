@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "diff/hunk"
 require_relative "diff/myers"
 
 module Diff
@@ -25,5 +26,9 @@ module Diff
 
   def self.diff(a, b)
     Myers.diff(Diff.lines(a), Diff.lines(b))
+  end
+
+  def self.diff_hunks(a, b)
+    Hunk.filter(Diff.diff(a, b))
   end
 end

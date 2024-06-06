@@ -34,6 +34,7 @@ describe Command::Diff do
         index 12f00e9..5ea2ed4 100644
         --- a/file.txt
         +++ b/file.txt
+        @@ -1,1 +1,1 @@
         -contents
         +changed
       DIFF
@@ -63,6 +64,7 @@ describe Command::Diff do
         index 12f00e9..5ea2ed4
         --- a/file.txt
         +++ b/file.txt
+        @@ -1,1 +1,1 @@
         -contents
         +changed
       DIFF
@@ -77,6 +79,7 @@ describe Command::Diff do
         index 12f00e9..0000000
         --- a/file.txt
         +++ /dev/null
+        @@ -1,1 +0,0 @@
         -contents
       DIFF
     end
@@ -102,6 +105,7 @@ describe Command::Diff do
         index 12f00e9..5ea2ed4 100644
         --- a/file.txt
         +++ b/file.txt
+        @@ -1,1 +1,1 @@
         -contents
         +changed
       DIFF
@@ -133,6 +137,7 @@ describe Command::Diff do
         index 12f00e9..5ea2ed4
         --- a/file.txt
         +++ b/file.txt
+        @@ -1,1 +1,1 @@
         -contents
         +changed
       DIFF
@@ -149,6 +154,7 @@ describe Command::Diff do
         index 12f00e9..0000000
         --- a/file.txt
         +++ /dev/null
+        @@ -1,1 +0,0 @@
         -contents
       DIFF
     end
@@ -165,6 +171,7 @@ describe Command::Diff do
         index 0000000..ce01362
         --- /dev/null
         +++ b/another.txt
+        @@ -0,0 +1,1 @@
         +hello
       DIFF
     end
